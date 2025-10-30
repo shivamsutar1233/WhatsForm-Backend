@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { google } from "googleapis";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { dirname } from "path";
 import { config } from "dotenv";
 import * as process from "process";
 import crypto from "crypto";
@@ -20,14 +20,14 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(join(__dirname, "dist")));
+// if (process.env.NODE_ENV === "production") {
+//   app.use(express.static(join(__dirname, "dist")));
 
-  // Handle client-side routing
-  app.get("*", (req, res) => {
-    res.sendFile(join(__dirname, "dist", "index.html"));
-  });
-}
+//   // Handle client-side routing
+//   app.get("*", (req, res) => {
+//     res.sendFile(join(__dirname, "dist", "index.html"));
+//   });
+// }
 
 // Authentication middleware
 const authenticateAdmin = (req, res, next) => {

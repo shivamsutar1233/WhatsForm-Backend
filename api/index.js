@@ -249,11 +249,16 @@ app.get("/api/order-link/:linkId", async (req, res) => {
     // Get order link details
     const linkResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.ORDER_LINKS_SHEET_ID,
-      range: "OrderLinks!A:D",
+      range: "OrderLinks!A:E",
     });
 
     const linkRows = linkResponse.data.values || [];
     const orderLinks = linkRows.filter((row) => row[0] === linkId);
+
+    const paymentStatus =
+      orderLinks.length > 0
+        ? orderLinks[0][4] || "pending"
+        : orderLinks[4] | "pending";
 
     if (orderLinks.length === 0) {
       return res.status(404).json({
@@ -306,6 +311,7 @@ app.get("/api/order-link/:linkId", async (req, res) => {
       success: true,
       data: {
         linkId,
+        paymentStatus,
         products: orderProducts,
         totalAmount,
       },
@@ -458,6 +464,61 @@ app.post("/api/saveToSheet", async (req, res) => {
   }
 });
 
+app.put("/api/update-payment-status", async (req, res) => {
+  try {
+    const { linkId, paymentStatus } = req.body;
+
+    if (!linkId || !paymentStatus) {
+      return res.status(400).json({
+        success: false,
+        message: "linkId and paymentStatus are required",
+      });
+    }
+    // Get all order links
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.ORDER_LINKS_SHEET_ID,
+      range: "OrderLinks!A:E",
+    });
+    const rows = response.data.values || [];
+
+    // Find rows with the given linkId and update payment status
+    const updatedRows = rows.map((row) => {
+      if (row[0] === linkId) {
+        row[4] = paymentStatus; // Assuming payment status is in column E (index 4)
+      }
+      return row;
+    });
+
+    // Clear existing data
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId: process.env.ORDER_LINKS_SHEET_ID,
+      range: "OrderLinks!A:E",
+    });
+
+    // Write updated data back to the sheet
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: process.env.ORDER_LINKS_SHEET_ID,
+      range: "OrderLinks!A:E",
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: updatedRows,
+      },
+    });
+    res.json({
+      success: true,
+      message: "Payment status updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating payment status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating payment status",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
+// Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

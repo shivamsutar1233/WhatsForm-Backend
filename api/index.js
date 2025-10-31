@@ -130,7 +130,7 @@ app.get("/api/products", authenticateAdmin, async (req, res) => {
       id: row[0],
       name: row[1],
       description: row[2],
-      price: parseFloat(row[5]),
+      price: parseFloat(row[12]),
     }));
 
     res.json({
@@ -281,7 +281,7 @@ app.get("/api/order-link/:linkId", async (req, res) => {
           id: row[0],
           name: row[1],
           description: row[2],
-          price: parseFloat(row[5]),
+          price: parseFloat(row[12]),
           SKU: row[29],
           weight: row[22],
           length: row[31],
@@ -373,7 +373,7 @@ app.get("/api/product/:productId", async (req, res) => {
       id: product[0],
       name: product[1],
       description: product[2],
-      price: parseFloat(product[5]),
+      price: parseFloat(product[12]),
       SKU: product[29],
       weight: product[22],
       length: product[31],

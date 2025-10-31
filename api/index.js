@@ -122,7 +122,7 @@ app.get("/api/products", authenticateAdmin, async (req, res) => {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.PRODUCTS_SHEET_ID,
-      range: "Sheet1!A2:D",
+      range: "Sheet1!A3:AG", // Skip header row, get only data rows
     });
 
     const rows = response.data.values || [];
@@ -130,7 +130,7 @@ app.get("/api/products", authenticateAdmin, async (req, res) => {
       id: row[0],
       name: row[1],
       description: row[2],
-      price: parseFloat(row[3]),
+      price: parseFloat(row[5]),
     }));
 
     res.json({
@@ -270,7 +270,7 @@ app.get("/api/order-link/:linkId", async (req, res) => {
     // Get all products details
     const productResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.PRODUCTS_SHEET_ID,
-      range: "Sheet1!A2:D",
+      range: "Sheet1!A3:AG", // Skip header row, get only data rows
     });
 
     const productRows = productResponse.data.values || [];
@@ -281,7 +281,12 @@ app.get("/api/order-link/:linkId", async (req, res) => {
           id: row[0],
           name: row[1],
           description: row[2],
-          price: parseFloat(row[3]),
+          price: parseFloat(row[5]),
+          SKU: row[29],
+          weight: row[22],
+          length: row[31],
+          breadth: row[32],
+          height: row[30],
         },
       ])
     );
@@ -349,7 +354,7 @@ app.get("/api/product/:productId", async (req, res) => {
     // Get product data from the products sheet
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.PRODUCTS_SHEET_ID,
-      range: "Sheet1!A2:D", // Skip header row, get only data rows
+      range: "Sheet1!A3:AG", // Skip header row, get only data rows
     });
 
     const rows = response.data.values || [];
@@ -368,7 +373,12 @@ app.get("/api/product/:productId", async (req, res) => {
       id: product[0],
       name: product[1],
       description: product[2],
-      price: parseFloat(product[3]),
+      price: parseFloat(product[5]),
+      SKU: product[29],
+      weight: product[22],
+      length: product[31],
+      breadth: product[32],
+      height: product[30],
     };
 
     res.json({
@@ -404,11 +414,32 @@ app.post("/api/saveToSheet", async (req, res) => {
       phoneNumber,
       firstName,
       lastName,
-      address,
       quantity,
       totalAmount,
       paymentId,
       timestamp,
+      orderId,
+      shippingAddressLine1,
+      shippingAddressLine2,
+      shippingCity,
+      shippingState,
+      shippingPincode,
+      billingAddressLine1,
+      billingAddressLine2,
+      billingCity,
+      billingState,
+      billingPincode,
+      email,
+      productName,
+      unitPrice,
+      SKU,
+      PaymentMethod,
+      COD,
+      weightOfShipment,
+      lengthOfShipment,
+      breadthOfShipment,
+      heightOfShipment,
+      isThisMultipleProductOrder,
     } = req.body;
 
     console.log("Attempting to save data with credentials:", {
@@ -431,22 +462,50 @@ app.post("/api/saveToSheet", async (req, res) => {
         "Failed to access spreadsheet. Please verify sharing permissions."
       );
     }
+    const pickUpCode = "13556454"; // Hardcoded pickup code
+    const country = "India"; // Hardcoded country
+    const couriedId = "1"; // Hardcoded courier ID
 
     // Append data to Google Sheet
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEETS_ID,
-      range: "Sheet1!A:H", // Update this range according to your sheet
+      range: "Sheet1!A:AF", // Update this range according to your sheet
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [
           [
+            orderId,
+            pickUpCode,
             phoneNumber,
             firstName,
             lastName,
-            address,
+            email,
+            shippingAddressLine1,
+            shippingAddressLine2,
+            shippingPincode,
+            shippingCity,
+            shippingState,
+            country,
+            billingAddressLine1,
+            billingAddressLine2,
+            billingPincode,
+            billingCity,
+            billingState,
+            country,
+            productName,
+            unitPrice,
             quantity,
+            SKU,
+            PaymentMethod,
+            COD,
             totalAmount,
+            weightOfShipment,
+            lengthOfShipment,
+            breadthOfShipment,
+            heightOfShipment,
+            couriedId,
             paymentId,
+            isThisMultipleProductOrder,
             timestamp,
           ],
         ],

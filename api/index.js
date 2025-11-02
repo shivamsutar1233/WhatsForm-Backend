@@ -122,7 +122,7 @@ app.get("/api/products", authenticateAdmin, async (req, res) => {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.PRODUCTS_SHEET_ID,
-      range: "Sheet1!A3:AG", // Skip header row, get only data rows
+      range: "Sheet1!A3:AI", // Skip header row, get only data rows
     });
 
     const rows = response.data.values || [];
@@ -270,7 +270,7 @@ app.get("/api/order-link/:linkId", async (req, res) => {
     // Get all products details
     const productResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.PRODUCTS_SHEET_ID,
-      range: "Sheet1!A3:AG", // Skip header row, get only data rows
+      range: "Sheet1!A3:AI", // Skip header row, get only data rows
     });
 
     const productRows = productResponse.data.values || [];
@@ -282,11 +282,12 @@ app.get("/api/order-link/:linkId", async (req, res) => {
           name: row[1],
           description: row[2],
           price: parseFloat(row[12]),
-          SKU: row[29],
+          SKU: row[31],
           weight: row[22],
-          length: row[31],
-          breadth: row[32],
-          height: row[30],
+          length: row[33],
+          breadth: row[34],
+          height: row[32],
+          colors: row[30],
         },
       ])
     );
@@ -354,7 +355,7 @@ app.get("/api/product/:productId", async (req, res) => {
     // Get product data from the products sheet
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.PRODUCTS_SHEET_ID,
-      range: "Sheet1!A3:AG", // Skip header row, get only data rows
+      range: "Sheet1!A3:AI", // Skip header row, get only data rows
     });
 
     const rows = response.data.values || [];
@@ -374,11 +375,12 @@ app.get("/api/product/:productId", async (req, res) => {
       name: product[1],
       description: product[2],
       price: parseFloat(product[12]),
-      SKU: product[29],
+      SKU: product[31],
       weight: product[22],
-      length: product[31],
-      breadth: product[32],
-      height: product[30],
+      length: product[33],
+      breadth: product[34],
+      height: product[32],
+      colors: product[30],
     };
 
     res.json({
@@ -440,6 +442,7 @@ app.post("/api/saveToSheet", async (req, res) => {
       breadthOfShipment,
       heightOfShipment,
       isThisMultipleProductOrder,
+      customizationDetails,
     } = req.body;
 
     console.log("Attempting to save data with credentials:", {
@@ -511,6 +514,23 @@ app.post("/api/saveToSheet", async (req, res) => {
         ],
       },
     });
+
+    if (Object.keys(customizationDetails).length > 0) {
+      // Append customization details to a separate sheet
+      Object.keys(customizationDetails).forEach(async (key) => {
+        const details = customizationDetails[key];
+        details.forEach(async (detail) => {
+          await sheets.spreadsheets.values.append({
+            spreadsheetId: process.env.GOOGLE_SHEETS_ID,
+            range: `Custom-${key}!A:Z`, // Update this range according to your sheet
+            valueInputOption: "USER_ENTERED",
+            requestBody: {
+              values: [detail],
+            },
+          });
+        });
+      });
+    }
 
     res.json({ success: true, message: "Data saved successfully" });
   } catch (error) {

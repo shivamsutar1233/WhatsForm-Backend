@@ -519,16 +519,16 @@ app.post("/api/saveToSheet", async (req, res) => {
       // Append customization details to a separate sheet
       Object.keys(customizationDetails).forEach(async (key) => {
         const details = customizationDetails[key];
-        details.forEach(async (detail) => {
-          await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.GOOGLE_SHEETS_ID,
-            range: `Custom-${key}!A:Z`, // Update this range according to your sheet
-            valueInputOption: "USER_ENTERED",
-            requestBody: {
-              values: [detail],
-            },
-          });
+        // details.forEach(async (detail) => {
+        await sheets.spreadsheets.values.append({
+          spreadsheetId: process.env.GOOGLE_SHEETS_ID,
+          range: `Custom-${key}!A:Z`, // Update this range according to your sheet
+          valueInputOption: "USER_ENTERED",
+          requestBody: {
+            values: [...details],
+          },
         });
+        // });
       });
     }
 

@@ -597,6 +597,92 @@ app.put("/api/update-payment-status", async (req, res) => {
   }
 });
 
+app.get("/api/order/:orderId", async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    console.log("Fetching order details for orderId:", orderId);
+
+    // Get order data from the main orders sheet
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SHEETS_ID,
+      range: "Sheet1!A:AF",
+    });
+
+    const rows = response.data.values || [];
+
+    // Find the order with matching orderId (assuming orderId is in first column)
+    const orderRow = rows.find((row) => row[0] === orderId);
+
+    if (!orderRow) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Map the row data to order object
+    const orderData = {
+      orderId: orderRow[0],
+      pickUpCode: orderRow[1],
+      phoneNumber: orderRow[2],
+      firstName: orderRow[3],
+      lastName: orderRow[4],
+      email: orderRow[5],
+      shippingAddress: {
+        addressLine1: orderRow[6],
+        addressLine2: orderRow[7],
+        pincode: orderRow[8],
+        city: orderRow[9],
+        state: orderRow[10],
+        country: orderRow[11],
+      },
+      billingAddress: {
+        addressLine1: orderRow[12],
+        addressLine2: orderRow[13],
+        pincode: orderRow[14],
+        city: orderRow[15],
+        state: orderRow[16],
+        country: orderRow[17],
+      },
+      product: {
+        name: orderRow[18],
+        unitPrice: parseFloat(orderRow[19]) || 0,
+        quantity: parseInt(orderRow[20]) || 0,
+        SKU: orderRow[21],
+      },
+      payment: {
+        method: orderRow[22],
+        COD: orderRow[23],
+        totalAmount: parseFloat(orderRow[24]) || 0,
+        paymentId: orderRow[30],
+      },
+      shipping: {
+        weight: parseFloat(orderRow[25]) || 0,
+        dimensions: {
+          length: parseFloat(orderRow[26]) || 0,
+          breadth: parseFloat(orderRow[27]) || 0,
+          height: parseFloat(orderRow[28]) || 0,
+        },
+        courierId: orderRow[29],
+      },
+      isMultipleProductOrder: orderRow[31],
+      timestamp: orderRow[32],
+    };
+
+    res.json({
+      success: true,
+      data: orderData,
+    });
+  } catch (error) {
+    console.error("Error fetching order details:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching order details",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

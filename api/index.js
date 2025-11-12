@@ -467,7 +467,7 @@ app.post("/api/saveToSheet", async (req, res) => {
     }
     const pickUpCode = "13556454"; // Hardcoded pickup code
     const country = "India"; // Hardcoded country
-    const couriedId = "1"; // Hardcoded courier ID
+    // const couriedId = "1"; // Hardcoded courier ID
 
     // Append data to Google Sheet
     await sheets.spreadsheets.values.append({
@@ -506,7 +506,7 @@ app.post("/api/saveToSheet", async (req, res) => {
             lengthOfShipment,
             breadthOfShipment,
             heightOfShipment,
-            couriedId,
+            "", // Courier Name (not provided)
             paymentId,
             isThisMultipleProductOrder,
             timestamp,

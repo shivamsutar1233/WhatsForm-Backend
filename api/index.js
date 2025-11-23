@@ -468,6 +468,10 @@ app.post("/api/saveToSheet", async (req, res) => {
     }
     let productRows = [];
 
+    
+    const pickUpCode = "13556454"; // Hardcoded pickup code
+    const country = "India"; // Hardcoded country
+    // const couriedId = "1"; // Hardcoded courier ID
     products?.length > 0 && products.forEach(product => {
       productRows.push([
                     orderId,
@@ -505,10 +509,6 @@ app.post("/api/saveToSheet", async (req, res) => {
             timestamp,
           ]);
         });
-
-    const pickUpCode = "13556454"; // Hardcoded pickup code
-    const country = "India"; // Hardcoded country
-    // const couriedId = "1"; // Hardcoded courier ID
 
     // Append data to Google Sheet
     await sheets.spreadsheets.values.append({

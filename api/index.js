@@ -441,6 +441,7 @@ app.post("/api/saveToSheet", async (req, res) => {
       lengthOfShipment,
       breadthOfShipment,
       heightOfShipment,
+      products,
       isThisMultipleProductOrder,
       customizationDetails,
     } = req.body;
@@ -465,19 +466,11 @@ app.post("/api/saveToSheet", async (req, res) => {
         "Failed to access spreadsheet. Please verify sharing permissions."
       );
     }
-    const pickUpCode = "13556454"; // Hardcoded pickup code
-    const country = "India"; // Hardcoded country
-    // const couriedId = "1"; // Hardcoded courier ID
+    let productRows = [];
 
-    // Append data to Google Sheet
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: process.env.GOOGLE_SHEETS_ID,
-      range: "Sheet1!A:AF", // Update this range according to your sheet
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [
-          [
-            orderId,
+    products?.length > 0 && products.forEach(product => {
+      productRows.push([
+                    orderId,
             pickUpCode,
             phoneNumber,
             firstName,
@@ -495,22 +488,71 @@ app.post("/api/saveToSheet", async (req, res) => {
             billingCity,
             billingState,
             country,
-            productName,
-            unitPrice,
-            quantity,
-            SKU,
+            product.name,
+            product.price,
+            product.quantity,
+            product.SKU,
             PaymentMethod,
             COD,
             totalAmount,
-            weightOfShipment,
-            lengthOfShipment,
-            breadthOfShipment,
-            heightOfShipment,
+            product.weight,
+            product.length,
+            product.breadth,
+            product.height,
             "", // Courier Name (not provided)
             paymentId,
             isThisMultipleProductOrder,
             timestamp,
-          ],
+          ]);
+        });
+
+    const pickUpCode = "13556454"; // Hardcoded pickup code
+    const country = "India"; // Hardcoded country
+    // const couriedId = "1"; // Hardcoded courier ID
+
+    // Append data to Google Sheet
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: process.env.GOOGLE_SHEETS_ID,
+      range: "Sheet1!A:AF", // Update this range according to your sheet
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [
+          // [
+          //   orderId,
+          //   pickUpCode,
+          //   phoneNumber,
+          //   firstName,
+          //   lastName,
+          //   email,
+          //   shippingAddressLine1,
+          //   shippingAddressLine2,
+          //   shippingPincode,
+          //   shippingCity,
+          //   shippingState,
+          //   country,
+          //   billingAddressLine1,
+          //   billingAddressLine2,
+          //   billingPincode,
+          //   billingCity,
+          //   billingState,
+          //   country,
+          //   productName,
+          //   unitPrice,
+          //   quantity,
+          //   SKU,
+          //   PaymentMethod,
+          //   COD,
+          //   totalAmount,
+          //   weightOfShipment,
+          //   lengthOfShipment,
+          //   breadthOfShipment,
+          //   heightOfShipment,
+          //   "", // Courier Name (not provided)
+          //   paymentId,
+          //   isThisMultipleProductOrder,
+          //   timestamp,
+          // ],
+          ...productRows,
         ],
       },
     });

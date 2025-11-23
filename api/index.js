@@ -499,7 +499,7 @@ app.post("/api/saveToSheet", async (req, res) => {
             PaymentMethod,
             COD,
             totalAmount,
-            product.weight,
+            product.weight?.split(" ")[0],
             product.length,
             product.breadth,
             product.height,

@@ -282,14 +282,14 @@ app.get("/api/order-link/:linkId", async (req, res) => {
     if (isCustomOrder) {
       const customOrderResponse = await sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_SHEETS_ID,
-        range: "Custom-Orders!A:Q",
+        range: "Custom-Orders!A:R",
       });
       const productId =
         orderLinks.length > 0 ? orderLinks[0][1] : orderLinks[1];
 
       const customOrderRows = customOrderResponse.data.values || [];
       const customOrderDetails = customOrderRows.filter(
-        (row) => row[0] === productId
+        (row) => row[1] === productId
       );
       return res.json({
         success: true,

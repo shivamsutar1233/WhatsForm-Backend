@@ -296,6 +296,7 @@ app.get("/api/order-link/:linkId", async (req, res) => {
         data: {
           linkId,
           customOrderDetails: customOrderDetails,
+          isCustomOrder: isCustomOrder,
           paymentStatus,
         },
       });

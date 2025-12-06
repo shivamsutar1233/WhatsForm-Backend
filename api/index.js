@@ -155,7 +155,7 @@ const generateLinkId = () => {
 // API Routes
 app.post("/api/generate-link", async (req, res) => {
   try {
-    const { products } = req.body;
+    const { products, isCustomOrder = false } = req.body;
 
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({
@@ -198,10 +198,19 @@ app.post("/api/generate-link", async (req, res) => {
         // Add headers
         await sheets.spreadsheets.values.append({
           spreadsheetId: process.env.ORDER_LINKS_SHEET_ID,
-          range: "OrderLinks!A1:D1",
+          range: "OrderLinks!A1:F1",
           valueInputOption: "USER_ENTERED",
           requestBody: {
-            values: [["Link ID", "Product ID", "Quantity", "Timestamp"]],
+            values: [
+              [
+                "Link ID",
+                "Product ID",
+                "Quantity",
+                "Timestamp",
+                "Payment Status",
+                "Is Custom Order",
+              ],
+            ],
           },
         });
       }
@@ -216,11 +225,13 @@ app.post("/api/generate-link", async (req, res) => {
       productId,
       quantity,
       timestamp,
+      "",
+      isCustomOrder ? 1 : 0,
     ]);
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.ORDER_LINKS_SHEET_ID,
-      range: "OrderLinks!A:D",
+      range: "OrderLinks!A:F",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: rows,

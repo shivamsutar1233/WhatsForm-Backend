@@ -278,7 +278,7 @@ app.get("/api/order-link/:linkId", async (req, res) => {
       });
     }
     const isCustomOrder =
-      orderLinks?.length > 0 ? orderLinks[0][5] === 1 : orderLinks[5] === 1;
+      orderLinks?.length > 0 ? orderLinks[0][5] == "1" : orderLinks[5] == "1";
     if (isCustomOrder) {
       const customOrderResponse = await sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_SHEETS_ID,

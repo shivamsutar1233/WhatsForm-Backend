@@ -249,7 +249,7 @@ app.get("/api/order-link/:linkId", async (req, res) => {
     // Get order link details
     const linkResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.ORDER_LINKS_SHEET_ID,
-      range: "OrderLinks!A:E",
+      range: "OrderLinks!A:F",
     });
 
     const linkRows = linkResponse.data.values || [];
@@ -264,6 +264,26 @@ app.get("/api/order-link/:linkId", async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Order link not found",
+      });
+    }
+    const isCustomOrder = orderLinks[0][5] === 1;
+    if (isCustomOrder) {
+      const customOrderResponse = await sheets.spreadsheets.values.get({
+        spreadsheetId: process.env.GOOGLE_SHEETS_ID,
+        range: "Custom-Orders!A:Q",
+      });
+
+      const customOrderRows = customOrderResponse.data.values || [];
+      const customOrderDetails = customOrderRows.filter(
+        (row) => row[0] === linkId
+      );
+      return res.json({
+        success: true,
+        data: {
+          linkId,
+          customOrderDetails: customOrderDetails,
+          paymentStatus,
+        },
       });
     }
 
